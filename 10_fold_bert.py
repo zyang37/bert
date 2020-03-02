@@ -62,12 +62,12 @@ def build(model, num, lr=0.00001):
 
 # main
 ################################################################
-SEQ_LEN = 60
+SEQ_LEN = 100
 BATCH_SIZE = 128
 EPOCHS = 5
 LR = 1e-4
 
-pretrained_path = '../twitter/zhenning/Content_Analysis/NN/uncased_L-12_H-768_A-12'
+pretrained_path = '../twitter/zhenning/Content_Analysis/NN/uncased_L-24_H-1024_A-16'
 config_path = os.path.join(pretrained_path, 'bert_config.json')
 checkpoint_path = os.path.join(pretrained_path, 'bert_model.ckpt')
 vocab_path = os.path.join(pretrained_path, 'vocab.txt')
@@ -93,8 +93,10 @@ model = load_trained_model_from_checkpoint(
     seq_len=SEQ_LEN,
 )
 
+# ============================================= read xlsx file ================================================
+# ======================== enter col name for label
+# ======================== enter col name for Text
 import sys
-
 df = pd.read_excel(sys.argv[1])
 print("col name: ", end=" ")
 code_label = input()
@@ -178,7 +180,7 @@ for train_index, test_index in kf.split(df[text_label], list(df[code_label])):
         seq_len=SEQ_LEN,
     )
     print('building')
-    model = build(model, len(train_y), lr=0.00005)
+    model = build(model, len(train_y), lr=0.00001)
     
     validation_data=(test_x, test_y)
     try:
