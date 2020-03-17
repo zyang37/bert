@@ -7,10 +7,33 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 # python3 prog xlsx output_dir
 
 import os
+import sys
 from time import time
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
 import pandas as pd
+
+#import nvidia_smi
+from gpuinfo import GPUInfo
+
+def gpu_usage():
+    total_memory = 32000
+    available_device = GPUInfo.check_empty()
+    percent,memory=GPUInfo.gpu_usage()
+    for i in range(len(memory)):
+        memory[i] = float(memory[i])/total_memory 
+    print(memory)
+    return memory
+
+def get_a_free_gpu():
+    count = 0
+    #os.environ["CUDA_VISIBLE_DEVICES"]= "0, 1, 2, 3"
+    memory = gpu_usage()
+    for i in range(len(memory)):
+        if (memory[i]<.1):
+            print('run on device {}, Usage: {:.2f}%'.format(i, memory[i]*100))
+            break
+    os.environ["CUDA_VISIBLE_DEVICES"]= "{}".format(i)
 
 # helper functions
 def load_data(tokenizer, df, text_col, code_col, SEQ_LEN):
@@ -29,7 +52,7 @@ def load_data(tokenizer, df, text_col, code_col, SEQ_LEN):
     return [indices, np.zeros_like(indices)], np.array(sentiments)
 
 
-def build(model, num, lr=0.00001):
+def build(model, num, lr=0.00002):
     # @title Build Custom Model
     from tensorflow.python import keras
     from keras_bert import AdamWarmup, calc_train_steps
@@ -50,6 +73,13 @@ def build(model, num, lr=0.00001):
         #print(x)
         model.layers[x].trainable = True
 
+    ''' 
+    model.layers[-3].trainable = True
+    model.layers[-4].trainable = True
+    model.layers[-5].trainable = True
+    model.layers[-6].trainable = True
+    model.layers[-7].trainable = True
+    '''
     model.layers[-1].trainable = True
     model.layers[-2].trainable = True
 
@@ -62,18 +92,23 @@ def build(model, num, lr=0.00001):
 
 # main
 ################################################################
-SEQ_LEN = 100
-BATCH_SIZE = 128
-EPOCHS = 5
-LR = 1e-4
+SEQ_LEN = 60
+BATCH_SIZE = 64
+EPOCHS = 6
+LR = 0.00001
 
-pretrained_path = '../twitter/zhenning/Content_Analysis/NN/uncased_L-24_H-1024_A-16'
+pretrained_path = '../../twitter/zhenning/Content_Analysis/NN/uncased_L-12_H-768_A-12'
 config_path = os.path.join(pretrained_path, 'bert_config.json')
 checkpoint_path = os.path.join(pretrained_path, 'bert_model.ckpt')
 vocab_path = os.path.join(pretrained_path, 'vocab.txt')
 
 # TF_KERAS must be added to environment variables in order to use TPU
 os.environ['TF_KERAS'] = '1'
+# set visable gpus
+os.environ["CUDA_VISIBLE_DEVICES"]= "2"
+# gpu_usage()
+# get_a_free_gpu()
+# sys.exit()
 
 # @title Load Basic Model
 import codecs
@@ -130,6 +165,7 @@ print()
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print()
 
+'''
 # Limiting GPU memory growth
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -142,6 +178,7 @@ if gpus:
   except RuntimeError as e:
     # Memory growth must be set before GPUs have been initialized
     print(e)
+'''
 
 from sklearn.model_selection import KFold
 from sklearn.model_selection import StratifiedKFold as sk
@@ -180,11 +217,11 @@ for train_index, test_index in kf.split(df[text_label], list(df[code_label])):
         seq_len=SEQ_LEN,
     )
     print('building')
-    model = build(model, len(train_y), lr=0.00001)
+    model = build(model, len(train_y), lr=LR)
     
     validation_data=(test_x, test_y)
     try:
-        history = model.fit(train_x, train_y, epochs=8, batch_size=32, verbose=1, validation_data=validation_data)
+        history = model.fit(train_x, train_y, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=1, validation_data=validation_data)
     except:
         print('trainig error at fold_{}'.format(i))
     # save 
