@@ -96,10 +96,10 @@ for val in df_list:
     print('  krippendorff: {:.3}'.format(k), end="")
     print("  Cohen_kappa: {:.3}".format(c))
     i+=1
-    
+
 print('\navg acc: {}'.format(accuracy_score(df['test_y'], df['pred_test'])))
-print('avg krp: {}'.format(krippendorff.alpha([df['test_y'].values, df['pred_test'].values])))
-print('avg coh: {}'.format(cohen_kappa_score(df['test_y'].values, df['pred_test'].values)))
+print('avg krp (0, 1): {}'.format(krippendorff.alpha([df['test_y'].values, df['pred_test'].values])))
+print('avg coh (-1,1): {}'.format(cohen_kappa_score(df['test_y'].values, df['pred_test'].values)))
 
 
 # In[4]:
