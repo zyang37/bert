@@ -73,7 +73,7 @@ def build(model, num, lr=0.00002):
         #print(x)
         model.layers[x].trainable = True
 
-    ''' 
+    '''
     model.layers[-3].trainable = True
     model.layers[-4].trainable = True
     model.layers[-5].trainable = True
@@ -94,8 +94,8 @@ def build(model, num, lr=0.00002):
 ################################################################
 SEQ_LEN = 60
 BATCH_SIZE = 64
-EPOCHS = 6
-LR = 0.00001
+EPOCHS = 7
+LR = 0.0001
 
 pretrained_path = '../../twitter/zhenning/Content_Analysis/NN/uncased_L-12_H-768_A-12'
 config_path = os.path.join(pretrained_path, 'bert_config.json')
@@ -105,9 +105,9 @@ vocab_path = os.path.join(pretrained_path, 'vocab.txt')
 # TF_KERAS must be added to environment variables in order to use TPU
 os.environ['TF_KERAS'] = '1'
 # set visable gpus
-os.environ["CUDA_VISIBLE_DEVICES"]= "2"
+os.environ["CUDA_VISIBLE_DEVICES"]= "1 2 3"
 # gpu_usage()
-# get_a_free_gpu()
+get_a_free_gpu()
 # sys.exit()
 
 # @title Load Basic Model

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-
+ 
 # In[1]:
 
 
@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from time import time
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import cohen_kappa_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 
@@ -87,15 +88,18 @@ eval_report = {}
 i = 0
 for val in df_list:
     acc = accuracy_score(val['test_y'], val['pred_test'])
-    print('fold {}  acc: {:.5}'.format(i, acc), end="")
+    print('fold {}  acc: {:.3}'.format(i, acc), end="")
     coder1 = val['test_y'].values
     coder2 = val['pred_test'].values
     k = krippendorff.alpha([coder1, coder2])
-    print('  krippendorff: {:.5}'.format(k))
+    c = cohen_kappa_score(coder1, coder2)
+    print('  krippendorff: {:.3}'.format(k), end="")
+    print("  Cohen_kappa: {:.3}".format(c))
     i+=1
     
 print('\navg acc: {}'.format(accuracy_score(df['test_y'], df['pred_test'])))
 print('avg krp: {}'.format(krippendorff.alpha([df['test_y'].values, df['pred_test'].values])))
+print('avg coh: {}'.format(cohen_kappa_score(df['test_y'].values, df['pred_test'].values)))
 
 
 # In[4]:
